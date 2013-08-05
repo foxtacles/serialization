@@ -402,7 +402,7 @@ void pDefault::deconstruct(std::map<K, V>& arg, Args&... args) const
 
 	arg.clear();
 
-	for (unsigned int i = 0; i < size; ++i)
+	for (size_t i = 0; i < size; ++i)
 	{
 		std::pair<K, V> data;
 		deconstruct(data);
@@ -420,7 +420,7 @@ void pDefault::deconstruct(std::unordered_map<K, V>& arg, Args&... args) const
 
 	arg.clear();
 
-	for (unsigned int i = 0; i < size; ++i)
+	for (size_t i = 0; i < size; ++i)
 	{
 		std::pair<K, V> data;
 		deconstruct(data);
