@@ -218,7 +218,7 @@ void pDefault::construct(const pPacket& arg, const Args&... args)
 template<typename... Args>
 void pDefault::construct(const std::string& arg, const Args&...args)
 {
-	unsigned int length = arg.length();
+	size_t length = arg.length();
 	const unsigned char* str = reinterpret_cast<const unsigned char*>(arg.c_str());
 
 	data.insert(data.end(), str, str + length + 1);
@@ -357,7 +357,7 @@ inline pPacket pDefault::deconstruct_single() const
 template<typename... Args>
 void pDefault::deconstruct(std::string& arg, Args&... args) const
 {
-	unsigned int length = std::strlen(reinterpret_cast<const char*>(&data[location]));
+	size_t length = std::strlen(reinterpret_cast<const char*>(&data[location]));
 
 	if (location + length + 1 > this->length())
 		throw std::runtime_error("Reading past the end of packet");
@@ -372,7 +372,7 @@ void pDefault::deconstruct(std::string& arg, Args&... args) const
 template<typename T, typename... Args>
 void pDefault::deconstruct(std::vector<T>& arg, Args&... args) const
 {
-	unsigned int size = deconstruct_single<unsigned int>();
+	size_t size = deconstruct_single<size_t>();
 
 	arg.resize(size);
 
@@ -385,7 +385,7 @@ void pDefault::deconstruct(std::vector<T>& arg, Args&... args) const
 template<typename T, typename... Args>
 void pDefault::deconstruct(std::list<T>& arg, Args&... args) const
 {
-	unsigned int size = deconstruct_single<unsigned int>();
+	size_t size = deconstruct_single<size_t>();
 
 	arg.resize(size);
 
@@ -398,7 +398,7 @@ void pDefault::deconstruct(std::list<T>& arg, Args&... args) const
 template<typename K, typename V, typename... Args>
 void pDefault::deconstruct(std::map<K, V>& arg, Args&... args) const
 {
-	unsigned int size = deconstruct_single<unsigned int>();
+	size_t size = deconstruct_single<size_t>();
 
 	arg.clear();
 
@@ -416,7 +416,7 @@ void pDefault::deconstruct(std::map<K, V>& arg, Args&... args) const
 template<typename K, typename V, typename... Args>
 void pDefault::deconstruct(std::unordered_map<K, V>& arg, Args&... args) const
 {
-	unsigned int size = deconstruct_single<unsigned int>();
+	size_t size = deconstruct_single<size_t>();
 
 	arg.clear();
 
