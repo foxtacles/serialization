@@ -1,6 +1,8 @@
 #ifndef PACKETFACTORY_H
 #define PACKETFACTORY_H
 
+#include "PacketTypes.h"
+
 #include <list>
 #include <map>
 #include <unordered_map>
@@ -503,5 +505,7 @@ class pGeneratorDefault : public pDefault
 			deconstruct(std::forward<Args&>(args)...);
 		}
 };
+
+#include "PacketExtensions.h"
 
 #endif
