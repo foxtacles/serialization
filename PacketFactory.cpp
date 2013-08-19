@@ -63,8 +63,20 @@ pPacket PacketFactory::Init(const unsigned char* stream, unsigned int len)
 			packet = new typename pTypesMap<pTypes::ID_GAME_DELETED>::type(stream, len);
 			break;
 
+		case pTypes::ID_BASE_NEW:
+			packet = new typename pTypesMap<pTypes::ID_BASE_NEW>::type(stream, len);
+			break;
+
+		case pTypes::ID_REFERENCE_NEW:
+			packet = new typename pTypesMap<pTypes::ID_REFERENCE_NEW>::type(stream, len);
+			break;
+
 		case pTypes::ID_OBJECT_NEW:
 			packet = new typename pTypesMap<pTypes::ID_OBJECT_NEW>::type(stream, len);
+			break;
+
+		case pTypes::ID_ITEMLIST_NEW:
+			packet = new typename pTypesMap<pTypes::ID_ITEMLIST_NEW>::type(stream, len);
 			break;
 
 		case pTypes::ID_ITEM_NEW:
