@@ -24,27 +24,6 @@ class pReferenceDefault : public pDefault
 		}
 };
 
-class pReferenceNewDefault : public pReferenceDefault
-{
-		friend class PacketFactory;
-
-	protected:
-		pReferenceNewDefault(pTypes type) : pReferenceDefault(type)
-		{
-
-		}
-
-		pReferenceNewDefault(pTypes type, RakNet::NetworkID id, unsigned int refID, unsigned int baseID) : pReferenceDefault(type, id)
-		{
-			construct(refID, baseID);
-		}
-
-		pReferenceNewDefault(const unsigned char* stream, unsigned int len) : pReferenceDefault(stream, len)
-		{
-
-		}
-};
-
 template<pTypes Type, typename... Args>
 class pGeneratorReference : public pReferenceDefault
 {
@@ -67,16 +46,16 @@ class pGeneratorReference : public pReferenceDefault
 };
 
 template<pTypes Type, typename... Args>
-class pGeneratorReferenceExtend : public pReferenceNewDefault
+class pGeneratorReferenceExtend : public pReferenceDefault
 {
 		friend class PacketFactory;
 
 	private:
-		pGeneratorReferenceExtend(const pPacket& sub, const Args&... args) : pReferenceNewDefault(Type)
+		pGeneratorReferenceExtend(const pPacket& sub, const Args&... args) : pReferenceDefault(Type)
 		{
 			construct(sub, std::forward<const Args&>(args)...);
 		}
-		pGeneratorReferenceExtend(const unsigned char* stream, unsigned int len) : pReferenceNewDefault(stream, len)
+		pGeneratorReferenceExtend(const unsigned char* stream, unsigned int len) : pReferenceDefault(stream, len)
 		{
 
 		}
