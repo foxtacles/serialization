@@ -1,7 +1,7 @@
 #ifndef PACKETEXTENSIONS_H
 #define PACKETEXTENSIONS_H
 
-#include "RakNet.h"
+#include "RakNet.hpp"
 
 class pReferenceDefault : public pDefault
 {

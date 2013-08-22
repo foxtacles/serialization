@@ -1,7 +1,7 @@
 #ifndef PACKETTYPES_H
 #define PACKETTYPES_H
 
-#include "Data.h"
+#include "Data.hpp"
 
 typedef unsigned char pTypesSize;
 
