@@ -10,6 +10,8 @@
 #include "Text.hpp"
 #include "Edit.hpp"
 #include "RadioButton.hpp"
+#include "ListItem.hpp"
+#include "List.hpp"
 #include "VaultException.hpp"
 
 using namespace std;
@@ -126,6 +128,14 @@ pPacket PacketFactory::Init(const unsigned char* stream, unsigned int len)
 
 		case pTypes::ID_RADIOBUTTON_NEW:
 			packet = new typename pTypesMap<pTypes::ID_RADIOBUTTON_NEW>::type(stream, len);
+			break;
+
+		case pTypes::ID_LISTITEM_NEW:
+			packet = new typename pTypesMap<pTypes::ID_LISTITEM_NEW>::type(stream, len);
+			break;
+
+		case pTypes::ID_LIST_NEW:
+			packet = new typename pTypesMap<pTypes::ID_LIST_NEW>::type(stream, len);
 			break;
 
 		case pTypes::ID_WINDOW_REMOVE:
@@ -262,6 +272,10 @@ pPacket PacketFactory::Init(const unsigned char* stream, unsigned int len)
 
 		case pTypes::ID_UPDATE_WGROUP:
 			packet = new typename pTypesMap<pTypes::ID_UPDATE_WGROUP>::type(stream, len);
+			break;
+
+		case pTypes::ID_UPDATE_WLSELECTED:
+			packet = new typename pTypesMap<pTypes::ID_UPDATE_WLSELECTED>::type(stream, len);
 			break;
 
 		case pTypes::ID_UPDATE_WMODE:
