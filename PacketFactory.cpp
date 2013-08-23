@@ -274,6 +274,10 @@ pPacket PacketFactory::Init(const unsigned char* stream, unsigned int len)
 			packet = new typename pTypesMap<pTypes::ID_UPDATE_WGROUP>::type(stream, len);
 			break;
 
+		case pTypes::ID_UPDATE_WLTEXT:
+			packet = new typename pTypesMap<pTypes::ID_UPDATE_WLTEXT>::type(stream, len);
+			break;
+
 		case pTypes::ID_UPDATE_WLSELECTED:
 			packet = new typename pTypesMap<pTypes::ID_UPDATE_WLSELECTED>::type(stream, len);
 			break;
