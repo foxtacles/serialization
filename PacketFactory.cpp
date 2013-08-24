@@ -142,6 +142,10 @@ pPacket PacketFactory::Init(const unsigned char* stream, unsigned int len)
 			packet = new typename pTypesMap<pTypes::ID_WINDOW_REMOVE>::type(stream, len);
 			break;
 
+		case pTypes::ID_LISTITEM_REMOVE:
+			packet = new typename pTypesMap<pTypes::ID_LISTITEM_REMOVE>::type(stream, len);
+			break;
+
 		case pTypes::ID_UPDATE_NAME:
 			packet = new typename pTypesMap<pTypes::ID_UPDATE_NAME>::type(stream, len);
 			break;
