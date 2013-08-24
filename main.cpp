@@ -1,4 +1,4 @@
-#include "examples/ComplexObject.h"
+#include "examples/ComplexObject.hpp"
 
 #include <cassert>
 

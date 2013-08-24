@@ -1,7 +1,7 @@
 #ifndef PACKETFACTORY_H
 #define PACKETFACTORY_H
 
-#include "PacketTypes.h"
+#include "PacketTypes.hpp"
 
 #include <list>
 #include <map>

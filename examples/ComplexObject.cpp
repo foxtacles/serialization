@@ -1,4 +1,4 @@
-#include "ComplexObject.h"
+#include "ComplexObject.hpp"
 
 ComplexObject::ComplexObject() : justBecauseItWorks({{
 	{ // array
