@@ -18,53 +18,7 @@ template<pTypes>
 struct pTypesMap;
 
 class pDefault;
-typedef std::unique_ptr<pDefault> pPacket;
-
-class PacketFactory
-{
-	private:
-		PacketFactory() = delete;
-
-		template<pTypes type, typename... Args>
-		struct Create_ {
-			inline static pPacket Create(Args&&... args) {
-				return pPacket(new typename pTypesMap<type>::type(std::forward<Args>(args)...));
-			}
-		};
-
-		template<pTypes type>
-		struct Cast_ {
-			inline static const typename pTypesMap<type>::type* Cast(const pDefault* packet);
-		};
-
-		template<pTypes type, typename... Args>
-		struct Access_ {
-			inline static void Access(const pDefault* packet, Args&... args) {
-				Cast<type>(packet)->access(std::forward<Args&>(args)...);
-			}
-		};
-
-	public:
-		template<pTypes type, typename... Args>
-		inline static pPacket Create(Args&&... args) { return Create_<type, Args...>::Create(std::forward<Args>(args)...); }
-
-		template<pTypes type>
-		inline static const typename pTypesMap<type>::type* Cast(const pDefault* packet) { return Cast_<type>::Cast(packet); }
-
-		template<pTypes type>
-		inline static const typename pTypesMap<type>::type* Cast(const pPacket& packet) { return Cast_<type>::Cast(packet.get()); }
-
-		template<pTypes type, typename... Args>
-		inline static void Access(const pDefault* packet, Args&... args) { Access_<type, Args...>::Access(packet, std::forward<Args&>(args)...); }
-
-		template<pTypes type, typename... Args>
-		inline static void Access(const pPacket& packet, Args&... args) { Access_<type, Args...>::Access(packet.get(), std::forward<Args&>(args)...); }
-
-		template<typename T>
-		inline static T Pop(const pDefault* packet);
-
-		static pPacket Init(const unsigned char* stream, unsigned int len);
-};
+typedef pDefault pPacket;
 
 class pDefault
 {
@@ -95,19 +49,23 @@ class pDefault
 		template<typename T, size_t N>
 		void pack_array(std::array<T, N>&, tuple_count<0>) const;
 
-		std::vector<unsigned char> data;
+		union
+		{
+			std::vector<unsigned char> write;
+			const unsigned char* read;
+		};
+
+		unsigned int len;
 		mutable unsigned int location;
 
 	protected:
-		pDefault(pTypes type) : location(sizeof(pTypes))
+		pDefault(pTypes type) : len(0), location(sizeof(pTypes))
 		{
+			new(&write) decltype(write)();
 			construct(type);
 		}
 
-		pDefault(const unsigned char* stream, unsigned int len) : data(stream, stream + len), location(sizeof(pTypes))
-		{
-
-		}
+		pDefault(const unsigned char* stream, unsigned int len) : read(stream), len(len), location(sizeof(pTypes)) {}
 
 		template<typename T, typename... Args>
 		void construct(const T&, const Args&...);
@@ -171,26 +129,121 @@ class pDefault
 		void deconstruct(std::array<T, N>&, Args&...) const;
 
 	public:
-		virtual ~pDefault() = default;
+		bool readonly() const { return len; }
+
+		pDefault() noexcept : pDefault(static_cast<pTypes>(0)) {}
+
+		pDefault(pDefault&& p) noexcept
+		{
+			if (!p.readonly())
+				new(&write) decltype(write)(std::move(p.write));
+			else
+				read = p.read;
+
+			len = p.len;
+			location = p.location;
+		}
+
+		pDefault& operator=(pDefault&& p) noexcept
+		{
+			if (this != &p)
+			{
+				if (readonly())
+				{
+					if (p.readonly())
+						read = p.read;
+					else
+						new(&write) decltype(write)(std::move(p.write));
+				}
+				else
+				{
+					if (p.readonly())
+					{
+						using namespace std;
+						write.~vector();
+						read = p.read;
+					}
+					else
+						write = std::move(p.write);
+				}
+
+				len = p.len;
+				location = p.location;
+			}
+
+			return *this;
+		}
+
+		~pDefault() { using namespace std; if (!readonly()) write.~vector(); }
 
 		const unsigned char* get() const
 		{
-			return &data[0];
+			return readonly() ? read : &write[0];
 		}
 
 		pTypes type() const
 		{
-			return static_cast<pTypes>(data[0]);
+			return static_cast<pTypes>(readonly() ? *read : write[0]);
 		}
 
 		unsigned int length() const
 		{
-			return data.size();
+			return readonly() ? len : write.size();
 		}
 };
 
+class PacketFactory
+{
+	private:
+		PacketFactory() = delete;
+
+		template<pTypes type, typename... Args>
+		struct Create_ {
+			inline static pPacket Create(Args&&... args) {
+				static_assert(sizeof(typename pTypesMap<type>::type) == sizeof(pPacket), "Derived types must not contain any additional data");
+				return typename pTypesMap<type>::type(std::forward<Args>(args)...);
+			}
+		};
+
+		template<pTypes type>
+		struct Cast_ {
+			inline static const typename pTypesMap<type>::type* Cast(const pPacket* packet);
+		};
+
+		template<pTypes type, typename... Args>
+		struct Access_ {
+			inline static void Access(const pPacket* packet, Args&... args) {
+				Cast<type>(packet)->access(std::forward<Args&>(args)...);
+			}
+		};
+
+	public:
+		template<pTypes type, typename... Args>
+		inline static pPacket Create(Args&&... args) { return Create_<type, Args...>::Create(std::forward<Args>(args)...); }
+
+		template<pTypes type>
+		inline static const typename pTypesMap<type>::type* Cast(const pPacket* packet) { return Cast_<type>::Cast(packet); }
+
+		template<pTypes type>
+		inline static const typename pTypesMap<type>::type* Cast(const pPacket& packet) { return Cast_<type>::Cast(&packet); }
+
+		template<pTypes type, typename... Args>
+		inline static void Access(const pPacket* packet, Args&... args) { Access_<type, Args...>::Access(packet, std::forward<Args&>(args)...); }
+
+		template<pTypes type, typename... Args>
+		inline static void Access(const pPacket& packet, Args&... args) { Access_<type, Args...>::Access(&packet, std::forward<Args&>(args)...); }
+
+		template<typename T>
+		inline static T Pop(const pPacket* packet);
+
+		template<typename T>
+		inline static T Pop(const pPacket& packet) { return Pop<T>(&packet); }
+
+		inline static pPacket Init(const unsigned char* stream, unsigned int len) { return {stream, len}; }
+};
+
 template<pTypes type>
-inline const typename pTypesMap<type>::type* PacketFactory::Cast_<type>::Cast(const pDefault* packet) {
+inline const typename pTypesMap<type>::type* PacketFactory::Cast_<type>::Cast(const pPacket* packet) {
 	return packet->type() == type ? static_cast<const typename pTypesMap<type>::type*>(packet) : nullptr;
 }
 
@@ -200,7 +253,7 @@ void pDefault::construct(const T& arg, const Args&... args)
 	// is_trivially_copyable not implemented in GCC as of now
 	static_assert(std::is_trivial<T>::value, "Type cannot be trivially copied");
 
-	data.insert(data.end(), reinterpret_cast<const unsigned char*>(&arg), reinterpret_cast<const unsigned char*>(&arg) + sizeof(T));
+	write.insert(write.end(), reinterpret_cast<const unsigned char*>(&arg), reinterpret_cast<const unsigned char*>(&arg) + sizeof(T));
 
 	construct(std::forward<const Args&>(args)...);
 }
@@ -208,11 +261,11 @@ void pDefault::construct(const T& arg, const Args&... args)
 template<typename... Args>
 void pDefault::construct(const pPacket& arg, const Args&... args)
 {
-	const unsigned char* _data = arg->get();
-	unsigned int length = arg->length();
+	const unsigned char* _data = arg.get();
+	unsigned int length = arg.length();
 
 	construct(length);
-	data.insert(data.end(), _data, _data + length);
+	write.insert(write.end(), _data, _data + length);
 
 	construct(std::forward<const Args&>(args)...);
 }
@@ -223,7 +276,7 @@ void pDefault::construct(const std::string& arg, const Args&...args)
 	size_t length = arg.length();
 	const unsigned char* str = reinterpret_cast<const unsigned char*>(arg.c_str());
 
-	data.insert(data.end(), str, str + length + 1);
+	write.insert(write.end(), str, str + length + 1);
 
 	construct(std::forward<const Args&>(args)...);
 }
@@ -338,7 +391,7 @@ T pDefault::deconstruct_single() const
 
 	location += sizeof(T);
 
-	return *reinterpret_cast<const T*>(&data[location - sizeof(T)]);
+	return *reinterpret_cast<const T*>(&read[location - sizeof(T)]);
 }
 
 template<>
@@ -349,7 +402,7 @@ inline pPacket pDefault::deconstruct_single() const
 	if (location + length > this->length())
 		throw std::runtime_error("Reading past the end of packet");
 
-	pPacket packet = PacketFactory::Init(&data[location], length);
+	pPacket packet = PacketFactory::Init(&read[location], length);
 
 	location += length;
 
@@ -359,12 +412,12 @@ inline pPacket pDefault::deconstruct_single() const
 template<typename... Args>
 void pDefault::deconstruct(std::string& arg, Args&... args) const
 {
-	size_t length = std::strlen(reinterpret_cast<const char*>(&data[location]));
+	size_t length = std::strlen(reinterpret_cast<const char*>(&read[location]));
 
 	if (location + length + 1 > this->length())
 		throw std::runtime_error("Reading past the end of packet");
 
-	arg.assign(reinterpret_cast<const char*>(&data[location]), length);
+	arg.assign(reinterpret_cast<const char*>(&read[location]), length);
 
 	location += length + 1;
 
@@ -506,6 +559,6 @@ class pGeneratorDefault : public pDefault
 		}
 };
 
-#include "PacketExtensions.h"
+#include "PacketExtensions.hpp"
 
 #endif
