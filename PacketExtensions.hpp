@@ -3,22 +3,22 @@
 
 #include "RakNet.hpp"
 
-class pReferenceDefault : public pDefault
+class pReferenceDefault : public pPacket
 {
 		friend class PacketFactory;
 
 	protected:
-		pReferenceDefault(pTypes type) : pDefault(type)
+		pReferenceDefault(pTypes type) : pPacket(type)
 		{
 
 		}
 
-		pReferenceDefault(pTypes type, RakNet::NetworkID id) : pDefault(type)
+		pReferenceDefault(pTypes type, RakNet::NetworkID id) : pPacket(type)
 		{
 			construct(id);
 		}
 
-		pReferenceDefault(const unsigned char* stream, unsigned int len) : pDefault(stream, len)
+		pReferenceDefault(const unsigned char* stream, unsigned int len) : pPacket(stream, len)
 		{
 
 		}
