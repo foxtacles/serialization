@@ -1,7 +1,7 @@
 #ifndef COMPLEXOBJECT_H
 #define COMPLEXOBJECT_H
 
-#include "../PacketFactory.h"
+#include "../PacketFactory.hpp"
 
 #include <utility>
 #include <string>
@@ -29,6 +29,6 @@ class ComplexObject
 };
 
 // Defining the packet
-template<> struct pTypesMap<pTypes::ID_COMPLEX_OBJECT> { typedef pGeneratorDefault<pTypes::ID_COMPLEX_OBJECT, ComplexObject::nestedThing> type; };
+PF_PACKET(ID_COMPLEX_OBJECT, pGeneratorDefault, ComplexObject::nestedThing)
 
 #endif

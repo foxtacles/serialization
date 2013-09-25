@@ -559,6 +559,9 @@ class pGeneratorDefault : public pDefault
 		}
 };
 
+#define PF_PACKET(ID, generator, __VA_ARGS__) \
+	template<> struct pTypesMap<pTypes::ID> { typedef generator<pTypes::ID, __VA_ARGS__> type; };
+
 #include "PacketExtensions.hpp"
 
 #endif
