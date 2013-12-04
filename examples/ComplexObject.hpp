@@ -29,6 +29,6 @@ class ComplexObject
 };
 
 // Defining the packet
-PF_PACKET(ID_COMPLEX_OBJECT, pGeneratorDefault, ComplexObject::nestedThing)
+PF_MAKE(ID_COMPLEX_OBJECT, pGeneratorDefault, ComplexObject::nestedThing)
 
 #endif
