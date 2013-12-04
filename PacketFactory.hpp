@@ -461,8 +461,7 @@ void pDefault::deconstruct(std::map<K, V>& arg, Args&... args) const
 	{
 		std::pair<K, V> data;
 		deconstruct(data);
-		// arg.emplace_hint(arg.end(), move(data));
-		arg.insert(std::move(data));
+		arg.emplace_hint(arg.end(), move(data));
 	}
 
 	deconstruct(std::forward<Args&>(args)...);
@@ -559,10 +558,10 @@ class pGeneratorDefault : public pDefault
 		}
 };
 
-#define PF_PACKET(ID, generator, ...) \
+#define PF_MAKE(ID, generator, ...) \
 	template<> struct pTypesMap<pTypes::ID> { typedef generator<pTypes::ID, __VA_ARGS__> type; };
 
-#define PF_PACKET_E(ID, generator) \
+#define PF_MAKE_E(ID, generator) \
 	template<> struct pTypesMap<pTypes::ID> { typedef generator<pTypes::ID> type; };
 
 #include "PacketExtensions.hpp"
