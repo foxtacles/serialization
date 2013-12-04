@@ -461,8 +461,7 @@ void pDefault::deconstruct(std::map<K, V>& arg, Args&... args) const
 	{
 		std::pair<K, V> data;
 		deconstruct(data);
-		// arg.emplace_hint(arg.end(), move(data));
-		arg.insert(std::move(data));
+		arg.emplace_hint(arg.end(), move(data));
 	}
 
 	deconstruct(std::forward<Args&>(args)...);
